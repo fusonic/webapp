@@ -1,0 +1,89 @@
+<?php
+
+namespace Fusonic\WebApp;
+
+class AppHelper
+{
+    public function __construct()
+    { }
+
+    public function getManifest(AppConfiguration $configuration)
+    {
+        $manifest = [];
+
+        if (($language = $configuration->getLanguage()) !== null) {
+            $manifest["lang"] = $language;
+        }
+
+        if (($name = $configuration->getName()) !== null) {
+            $manifest["name"] = $name;
+        }
+
+        if (($shortName = $configuration->getShortName()) !== null) {
+            $manifest["short_name"] = $shortName;
+        }
+
+        if (($scope = $configuration->getScope()) !== null) {
+            $manifest["scope"] = $scope;
+        }
+
+        if (($startUrl = $configuration->getStartUrl()) !== null) {
+            $manifest["start_url"] = $startUrl;
+        }
+
+        if (($display = $configuration->getDisplay()) !== null) {
+            $manifest["display"] = $display;
+        }
+
+        if (($orientation = $configuration->getOrientation()) !== null) {
+            $manifest["orientation"] = $orientation;
+        }
+
+        $icons = $configuration->getIcons();
+        if (count($icons) > 0) {
+            $manifest["icons"] = [];
+
+            foreach ($icons as $icon) {
+                $manifest["icons"][] = $this->getImageData($icon);
+            }
+        }
+
+        $splashScreens = $configuration->getIcons();
+        if (count($splashScreens) > 0) {
+            $manifest["splash_screens"] = [];
+
+            foreach ($splashScreens as $splashScreen) {
+                $manifest["splash_screens"][] = $this->getImageData($splashScreen);
+            }
+        }
+
+        return $manifest;
+    }
+
+    private function getImageData(Image $image)
+    {
+        $data = [
+            "src" => $image->getSrc(),
+        ];
+
+        if (($type = $image->getType()) !== null) {
+            $data["type"] = $type;
+        }
+
+        if (($density = $image->getDensity()) !== null) {
+            $data["density"] = $density;
+        }
+
+        if (($backgroundColor = $image->getBackgroundColor()) !== null) {
+            $data["background_color"] = $backgroundColor;
+        }
+
+        $sizes = $image->getSizes();
+        if (count($sizes) > 0) {
+            $data["sizes"] = implode(" ", $sizes);
+        }
+
+        return $data;
+    }
+
+}

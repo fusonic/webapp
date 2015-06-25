@@ -1,0 +1,14 @@
+{
+    "name": "fusonic/webapp",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fusonic",
+            "email": "office@fusonic.net"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "~4.7"
+    }
+}
