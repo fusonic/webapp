@@ -2,12 +2,18 @@
 
 namespace Fusonic\WebApp;
 
-class AppHelper
+/**
+ * Generates an app manifest according to the W3C specification "Manifest for a web application"
+ * See http://www.w3.org/TR/appmanifest/
+ *
+ * @package Fusonic\WebApp
+ */
+class ManifestGenerator
 {
     public function __construct()
     { }
 
-    public function getManifest(AppConfiguration $configuration)
+    public function get(AppConfiguration $configuration)
     {
         $manifest = [];
 

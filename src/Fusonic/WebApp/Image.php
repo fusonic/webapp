@@ -1,14 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mburtscher
- * Date: 25.06.15
- * Time: 07:40
- */
 
 namespace Fusonic\WebApp;
 
-
+/**
+ * Defines an image according to the W3C specification "Manifest for a web application".
+ * See http://www.w3.org/TR/appmanifest/#image-object-and-its-members
+ *
+ * @package Fusonic\WebApp
+ */
 class Image
 {
     private $backgroundColor;

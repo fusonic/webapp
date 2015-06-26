@@ -2,6 +2,11 @@
 
 namespace Fusonic\WebApp;
 
+/**
+ * Contains all data of a web application to create different assets and/or tags.
+ *
+ * @package Fusonic\WebApp
+ */
 class AppConfiguration
 {
     const DISPLAY_BROWSER = "browser";
@@ -144,6 +149,9 @@ class AppConfiguration
         return $this;
     }
 
+    /**
+     * @return Image[]
+     */
     public function getIcons()
     {
         return $this->icons;
