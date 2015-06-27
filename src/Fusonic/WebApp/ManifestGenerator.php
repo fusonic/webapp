@@ -13,6 +13,12 @@ class ManifestGenerator
     public function __construct()
     { }
 
+    /**
+     * Returns the manifest data as array.
+     *
+     * @param AppConfiguration $configuration The configuration to create the manifest from.
+     * @return array
+     */
     public function get(AppConfiguration $configuration)
     {
         $manifest = [];

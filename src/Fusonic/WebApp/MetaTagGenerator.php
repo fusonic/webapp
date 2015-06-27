@@ -5,7 +5,7 @@ namespace Fusonic\WebApp;
 use Fusonic\Linq\Linq;
 
 /**
- * Generates various meta tags.
+ * Generates various meta/link tags.
  *
  * @package Fusonic\WebApp
  */
@@ -22,6 +22,12 @@ class MetaTagGenerator
         );
     }
 
+    /**
+     * Returns a string containing all meta/link tags.
+     *
+     * @param AppConfiguration $configuration The configuration to create tags from.
+     * @return string
+     */
     public function getTags(AppConfiguration $configuration)
     {
         $data = $this->getData($configuration);
@@ -30,12 +36,17 @@ class MetaTagGenerator
         foreach ($data as $tag) {
             $renderedTag = '<' . $tag["tag"];
             foreach ($tag as $key => $value) {
-                if ($key == 'tag') {
+                if ($key == 'tag' || $key == 'text') {
                     continue;
                 }
                 $renderedTag .= ' ' . $key . '="' . addslashes($value) . '"';
             }
             $renderedTag .= '>';
+
+            if (isset($tag["text"])) {
+                $renderedTag .= htmlspecialchars($tag["text"]) . '</' . $tag["tag"] . '>';
+            }
+
             $tags .= $renderedTag . "\n";
         }
         return $tags;
@@ -108,6 +119,17 @@ class MetaTagGenerator
     {
         // TODO
         // - meta: viewport
+        $tags = [];
+
+        if ($this->generateTitleTag) {
+            if (($title = $configuration->getName()) !== null) {
+                return [
+                    "tag" => "title",
+                    "text" => $title,
+                ];
+            }
+        }
+
         return [];
     }
 }
