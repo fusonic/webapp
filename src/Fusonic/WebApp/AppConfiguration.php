@@ -32,6 +32,8 @@ class AppConfiguration
     private $display;
     private $orientation;
     private $startUrl;
+    private $manifestUrl;
+    private $themeColor;
 
     public function __construct()
     { }
@@ -266,6 +268,56 @@ class AppConfiguration
     public function getSplashScreens()
     {
         return $this->splashScreens;
+    }
+
+    /**
+     * Sets the manifest URL.
+     *
+     * @param string $url URL to the manifest file.
+     * @return $this
+     */
+    public function setManifestUrl($url)
+    {
+        $url = trim($url);
+
+        $this->manifestUrl = $url;
+        return $this;
+    }
+
+    /**
+     * Returns the manifest URL or null if no value is set.
+     *
+     * @return string|null
+     */
+    public function getManifestUrl()
+    {
+        return $this->manifestUrl;
+    }
+
+    /**
+     * Sets the theme color. Must be a hex color code without alpha value or null.
+     *
+     * @param string $color The color code.
+     * @return $this
+     */
+    public function setThemeColor($color)
+    {
+        if ($color !== null && !preg_match("/^#[A-Fa-f0-9]{3,6}$/", trim($color))) {
+            throw new \InvalidArgumentException("Theme color must be a hex color code.");
+        }
+
+        $this->themeColor = $color;
+        return $this;
+    }
+
+    /**
+     * Returns the theme color or null if no value is set.
+     *
+     * @return string|null
+     */
+    public function getThemeColor()
+    {
+        return $this->themeColor;
     }
 
     /**
