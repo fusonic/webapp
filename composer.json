@@ -8,7 +8,7 @@
         }
     ],
     "require": {
-        "fusonic/linq": "~1.1"
+        "fusonic/linq": "^1.1"
     },
     "autoload": {
         "psr-0": {

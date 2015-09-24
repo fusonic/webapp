@@ -70,7 +70,6 @@ class TagGenerator
     }
 
     /**
-     * https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
      * https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
      *
      * @param AppConfiguration $configuration
@@ -95,6 +94,7 @@ class TagGenerator
             ]
         ];
 
+        // Icons
         // <link rel="apple-touch-icon" sizes="..." href="...">
         foreach ($configuration->getIcons() as $icon) {
             $tags[] = [
@@ -102,6 +102,16 @@ class TagGenerator
                 "rel" => "apple-touch-icon",
                 "sizes" => implode(" ", $icon->getSizes()),
                 "href" => $icon->getSrc(),
+            ];
+        }
+
+        // Theme color
+        // https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
+        if (($themeColor = $configuration->getThemeColor()) !== null) {
+            $tags[] = [
+                "meta",
+                "name" => "apple-mobile-web-app-status-bar-style",
+                "content" => $themeColor,
             ];
         }
 
@@ -125,15 +135,18 @@ class TagGenerator
             ];
         }
 
-        // TODO
-        // - meta: apple-mobile-web-app-status-bar-style
-
         return $tags;
     }
 
+    /**
+     * https://developers.google.com/web/fundamentals/device-access/stickyness/additional-customizations?hl=en
+     *
+     * @param AppConfiguration $configuration
+     * @return array
+     */
     private function getMicrosoftTags(AppConfiguration $configuration)
     {
-        // <meta name="msapplication-starturl" content="...">
+        // Start URL
         // https://msdn.microsoft.com/en-us/library/gg491732(v=vs.85).aspx#msapplication-starturl
         if (($startUrl = $configuration->getStartUrl()) !== null) {
             $tags[] = [
@@ -143,7 +156,7 @@ class TagGenerator
             ];
         }
 
-        // <meta name="msapplication-navbutton-color" content="...">
+        // Theme color
         // https://msdn.microsoft.com/en-us/library/gg491732(v=vs.85).aspx#msapplication-navbutton-color
         if (($themeColor = $configuration->getThemeColor()) !== null) {
             $tags[] = [
@@ -160,7 +173,7 @@ class TagGenerator
     {
         $tags = [];
 
-        // <title>...</title>
+        // Title
         // http://www.w3.org/TR/html5/document-metadata.html#the-title-element
         if ($this->generateTitleTag) {
             if (($title = $configuration->getName()) !== null) {
@@ -171,7 +184,7 @@ class TagGenerator
             }
         }
 
-        // <meta name="application-name" content="...">
+        // Application name
         // http://www.w3.org/TR/html5/document-metadata.html#meta-application-name
         if (($name = $configuration->getName()) !== null) {
             $tags[] = [
@@ -181,7 +194,7 @@ class TagGenerator
             ];
         }
 
-        // <meta name="theme-color" content="...">
+        // Theme color
         // https://github.com/whatwg/meta-theme-color
         if (($themeColor = $configuration->getThemeColor()) !== null) {
             $tags[] = [
@@ -191,7 +204,7 @@ class TagGenerator
             ];
         }
 
-        // <link rel="manifest" href="...">
+        // Manifest
         // http://www.w3.org/TR/appmanifest/#using-a-link-element-to-link-to-a-manifest
         if (($manifestUrl = $configuration->getManifestUrl()) !== null) {
             $tags[] = [
@@ -201,7 +214,7 @@ class TagGenerator
             ];
         }
 
-        // <link rel="icon" sizes="..." href="...">
+        // Icons
         // http://www.w3.org/TR/html5/links.html#rel-icon
         foreach ($configuration->getIcons() as $icon) {
             $tags[] = [
