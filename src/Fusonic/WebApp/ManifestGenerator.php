@@ -90,7 +90,10 @@ class ManifestGenerator
             $data["background_color"] = $backgroundColor;
         }
 
-        $sizes = $image->getSizes();
+        $sizes = [];
+        foreach ($image->getSizes() as $size) {
+            $sizes[] = $size[0] . "x" . $size[1];
+        }
         if (count($sizes) > 0) {
             $data["sizes"] = implode(" ", $sizes);
         }
