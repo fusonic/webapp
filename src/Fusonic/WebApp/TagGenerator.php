@@ -94,6 +94,15 @@ class TagGenerator
             ]
         ];
 
+        // Application name
+        if (($name = $configuration->getName()) !== null) {
+            $tags[] = [
+                "meta",
+                "name" => "apple-mobile-web-app-title",
+                "content" => $name,
+            ];
+        }
+
         // Icons
         // <link rel="apple-touch-icon" sizes="..." href="...">
         foreach ($configuration->getIcons() as $icon) {
@@ -235,6 +244,6 @@ class TagGenerator
             ];
         }
 
-        return [];
+        return $tags;
     }
 }
