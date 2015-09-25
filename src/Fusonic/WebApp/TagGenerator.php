@@ -97,10 +97,15 @@ class TagGenerator
         // Icons
         // <link rel="apple-touch-icon" sizes="..." href="...">
         foreach ($configuration->getIcons() as $icon) {
+            $sizes = [];
+            foreach ($icon->getSizes() as $size) {
+                $sizes[] = $size[0] . "x" . $size[1];
+            }
+
             $tags[] = [
                 "link",
                 "rel" => "apple-touch-icon",
-                "sizes" => implode(" ", $icon->getSizes()),
+                "sizes" => implode(" ", $sizes),
                 "href" => $icon->getSrc(),
             ];
         }
@@ -217,10 +222,15 @@ class TagGenerator
         // Icons
         // http://www.w3.org/TR/html5/links.html#rel-icon
         foreach ($configuration->getIcons() as $icon) {
+            $sizes = [];
+            foreach ($icon->getSizes() as $size) {
+                $sizes[] = $size[0] . "x" . $size[1];
+            }
+
             $tags[] = [
                 "link",
                 "rel" => "icon",
-                "sizes" => implode(" ", $icon->getSizes()),
+                "sizes" => implode(" ", $sizes),
                 "href" => $icon->getSrc(),
             ];
         }
