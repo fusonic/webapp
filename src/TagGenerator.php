@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the fusonic/webapp package.
+ *
+ * (c) Fusonic GmbH <office@fusonic.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fusonic\WebApp;
 
 use Fusonic\Linq\Linq;
