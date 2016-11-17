@@ -9,9 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Fusonic\WebApp;
+namespace Fusonic\WebApp\Generators;
 
 use Fusonic\Linq\Linq;
+use Fusonic\WebApp\AppConfiguration;
+use Fusonic\WebApp\Objects\Image;
 
 /**
  * Generates various meta/link tags.
