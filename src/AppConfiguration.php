@@ -18,12 +18,16 @@ use Fusonic\WebApp\Objects\Image;
  *
  * @package Fusonic\WebApp
  */
-class AppConfiguration
+final class AppConfiguration
 {
-    const DISPLAY_BROWSER = "browser";
+    const DIRECTION_LEFT_TO_RIGHT = "ltr";
+    const DIRECTION_RIGHT_TO_LEFT = "rtl";
+    const DIRECTION_AUTO = "auto";
+
     const DISPLAY_FULLSCREEN = "fullscreen";
-    const DISPLAY_MINIMAL_UI = "minimal-ui";
     const DISPLAY_STANDALONE = "standalone";
+    const DISPLAY_MINIMAL_UI = "minimal-ui";
+    const DISPLAY_BROWSER = "browser";
 
     const ORIENTATION_ANY = "any";
     const ORIENTATION_NATURAL = "natural";
@@ -34,25 +38,148 @@ class AppConfiguration
     const ORIENTATION_PORTRAIT_PRIMARY = "portrait-primary";
     const ORIENTATION_PORTRAIT_SECONDARY = "portrait-secondary";
 
+    private $backgroundColor;
+    private $description;
+    private $direction;
+    private $display;
+    private $icons = [ ];
     private $language;
     private $name;
-    private $shortName;
-    private $scope;
-    private $splashScreens = [];
-    private $icons = [];
-    private $display;
     private $orientation;
+    private $scope;
+    private $shortName;
     private $startUrl;
-    private $manifestUrl;
     private $themeColor;
 
-    public function __construct()
-    { }
+    private $manifestUrl;
+
+    private $splashScreens = [ ];
 
     /**
-     * Returns the display mode or null if no value is set.
+     * Returns the manifest URL.
      *
-     * @return string|null
+     * @return  string
+     */
+    public function getManifestUrl()
+    {
+        if ($this->manifestUrl === null) {
+            throw new \LogicException("Manifest URL cannot be null.");
+        }
+
+        return $this->manifestUrl;
+    }
+
+    /**
+     * Sets the manifest URL. You MUST set one for proper deployment.
+     *
+     * @param   string              $url
+     *
+     * @return  AppConfiguration
+     */
+    public function setManifestUrl($url)
+    {
+        $this->manifestUrl = $url;
+        return $this;
+    }
+
+    /**
+     * Returns the expected background color for the web application.
+     *
+     * @return  string|null
+     */
+    public function getBackgroundColor()
+    {
+        return $this->backgroundColor;
+    }
+
+    /**
+     * Sets the expected background color for the web application. Will also be used by Chrome 47 and later to
+     * auto-generate a splash screen.
+     *
+     * <p>
+     * This value repeats what is already available in the application stylesheet, but can be used by browsers to draw
+     * the background color of a web application when the manifest is available before the style sheet has loaded.
+     *
+     * <p>
+     * This creates a smooth transition between launching the web application and loading the application's content.
+     *
+     * @param   string              $backgroundColor
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#background_color-member
+     */
+    public function setBackgroundColor($backgroundColor)
+    {
+        $this->backgroundColor = $backgroundColor;
+        return $this;
+    }
+
+    /**
+     * Returns the general description of what the web application does.
+     *
+     * @return  string|null
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Sets a general description of what the web application does.
+     *
+     * @param   string              $description
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#description-member
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * Returns the primary text direction for the {@link $name}, {@link $shortName}, and {@link $description} members.
+     *
+     * @return  string|null
+     */
+    public function getDirection()
+    {
+        return $this->direction;
+    }
+
+    /**
+     * Sets the primary text direction for the {@link $name}, {@link $shortName}, and {@link $description} members.
+     *
+     * @param   string              $direction          One of AppConfiguration::DIRECTION_* constants.
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#dir-member
+     */
+    public function setDirection($direction)
+    {
+        if (!in_array(
+            $direction,
+            [
+                self::DIRECTION_LEFT_TO_RIGHT,
+                self::DIRECTION_RIGHT_TO_LEFT,
+                self::DIRECTION_AUTO
+            ]
+        )) {
+            throw new \InvalidArgumentException("Use one of AppConfiguration::DIRECTION_* constants.");
+        }
+
+        $this->direction = $direction;
+        return $this;
+    }
+
+    /**
+     * Returns the preferred display mode.
+     *
+     * @return  string|null
      */
     public function getDisplay()
     {
@@ -60,26 +187,26 @@ class AppConfiguration
     }
 
     /**
-     * Set the preferred display mode. Must be one of AppConfiguration::DISPLAY_* or null.
+     * Sets the preferred display mode.
      *
-     * @param string|null $display Preferred display mode.
-     * @return $this
+     * @param   string              $display            One of AppConfiguration::DISPLAY_* constants.
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#display-member
      */
     public function setDisplay($display)
     {
-        $display = strtolower(trim($display));
-
         if (!in_array(
             $display,
             [
-                null,
-                self::DISPLAY_BROWSER,
                 self::DISPLAY_FULLSCREEN,
                 self::DISPLAY_MINIMAL_UI,
-                self::DISPLAY_STANDALONE
+                self::DISPLAY_STANDALONE,
+                self::DISPLAY_BROWSER
             ]
         )) {
-            throw new \InvalidArgumentException("Use one of AppConfiguration::DISPLAY_* values.");
+            throw new \InvalidArgumentException("Use one of AppConfiguration::DISPLAY_* constants.");
         }
 
         $this->display = $display;
@@ -87,50 +214,34 @@ class AppConfiguration
     }
 
     /**
-     * Returns the default device orientation or null if no value is set.
+     * Returns an array of all application icons.
      *
-     * @return string|null
+     * @return  Image[]
      */
-    public function getOrientation()
+    public function getIcons()
     {
-        return $this->orientation;
+        return $this->icons;
     }
 
     /**
-     * Sets the default device orientation. Must be one of AppConfiguration::ORIENTATION_* or null.
+     * Adds an application icon.
      *
-     * @param string|null $orientation The default device orientation.
-     * @return $this
+     * @param   Image               $icon
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#icons-member
      */
-    public function setOrientation($orientation)
+    public function addIcon(Image $icon)
     {
-        $orientation = strtolower(trim($orientation));
-
-        if (!in_array(
-            $orientation,
-            [
-                null,
-                self::ORIENTATION_ANY,
-                self::ORIENTATION_LANDSCAPE,
-                self::ORIENTATION_LANDSCAPE_PRIMARY,
-                self::ORIENTATION_LANDSCAPE_SECONDARY,
-                self::ORIENTATION_NATURAL,
-                self::ORIENTATION_PORTRAIT,
-                self::ORIENTATION_PORTRAIT_PRIMARY,
-                self::ORIENTATION_PORTRAIT_SECONDARY,
-            ]
-        )) {
-            throw new \InvalidArgumentException("Use one of AppConfiguration::ORIENTATION_* values.");
-        }
-
-        $this->orientation = $orientation;
+        $this->icons[] = $icon;
         return $this;
     }
 
     /**
-     * Returns the application's language or null if no value is set.
+     * Returns the application's language.
      *
-     * @return string|null
+     * @return  string|null
      */
     public function getLanguage()
     {
@@ -138,10 +249,13 @@ class AppConfiguration
     }
 
     /**
-     * Sets the application's language. Must be a RFC5646 compliant string or null.
+     * Sets the application's language. Must be a RFC5646 compliant string.
      *
-     * @param string|null $language The application's language.
-     * @return $this
+     * @param   string              $language
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#lang-member
      */
     public function setLanguage($language)
     {
@@ -150,9 +264,9 @@ class AppConfiguration
     }
 
     /**
-     * Returns the application's name or null if no value is set.
+     * Returns the application's name.
      *
-     * @return string|null
+     * @return  string|null
      */
     public function getName()
     {
@@ -162,8 +276,11 @@ class AppConfiguration
     /**
      * Sets the application's name.
      *
-     * @param string|null $name The application's name.
-     * @return $this
+     * @param   string              $name
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#name-member
      */
     public function setName($name)
     {
@@ -172,9 +289,79 @@ class AppConfiguration
     }
 
     /**
-     * Returns the application's short name or null if no value is set.
+     * Returns the default device orientation.
      *
-     * @return string|null
+     * @return  string|null
+     */
+    public function getOrientation()
+    {
+        return $this->orientation;
+    }
+
+    /**
+     * Sets the default device orientation..
+     *
+     * @param   string              $orientation        One of AppConfiguration::ORIENTATION_* constants.
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#orientation-member
+     */
+    public function setOrientation($orientation)
+    {
+        if (!in_array(
+            $orientation,
+            [
+                self::ORIENTATION_ANY,
+                self::ORIENTATION_NATURAL,
+                self::ORIENTATION_LANDSCAPE,
+                self::ORIENTATION_LANDSCAPE_PRIMARY,
+                self::ORIENTATION_LANDSCAPE_SECONDARY,
+                self::ORIENTATION_PORTRAIT,
+                self::ORIENTATION_PORTRAIT_PRIMARY,
+                self::ORIENTATION_PORTRAIT_SECONDARY,
+            ]
+        )) {
+            throw new \InvalidArgumentException("Use one of AppConfiguration::ORIENTATION_* constants.");
+        }
+
+        $this->orientation = $orientation;
+        return $this;
+    }
+
+    /**
+     * Returns the application's navigation scope.
+     *
+     * @return  string|null
+     */
+    public function getScope()
+    {
+        return $this->scope;
+    }
+
+    /**
+     * Sets the application's navigation scope.
+     *
+     * <p>
+     * This basically restricts what web pages can be viewed while the manifest is applied. If the user navigates the
+     * application outside the scope, it returns to being a normal web page.
+     *
+     * @param   string              $scope
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#scope-member
+     */
+    public function setScope($scope)
+    {
+        $this->scope = $scope;
+        return $this;
+    }
+
+    /**
+     * Returns the application's short name.
+     *
+     * @return  string|null
      */
     public function getShortName()
     {
@@ -184,8 +371,11 @@ class AppConfiguration
     /**
      * Sets the application's short name.
      *
-     * @param string|null $shortName The application's short name.
-     * @return $this
+     * @param   string              $shortName
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#short_name-member
      */
     public function setShortName($shortName)
     {
@@ -194,31 +384,9 @@ class AppConfiguration
     }
 
     /**
-     * Returns the application's scope or null if no value is set.
+     * Returns the application's start URL.
      *
-     * @return string|null
-     */
-    public function getScope()
-    {
-        return $this->scope;
-    }
-
-    /**
-     * Sets the application's scope.
-     *
-     * @param string|null $scope The application's scope.
-     * @return $this
-     */
-    public function setScope($scope)
-    {
-        $this->scope = $scope;
-        return $this;
-    }
-
-    /**
-     * Returns the application's start URL or null if no value is set.
-     *
-     * @return string|null
+     * @return  string|null
      */
     public function getStartUrl()
     {
@@ -226,10 +394,13 @@ class AppConfiguration
     }
 
     /**
-     * Sets the application's start URLR.
+     * Sets the application's start URL.
      *
-     * @param string|null $startUrl The application's start URL.
-     * @return $this
+     * @param   string              $startUrl
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#start_url-member
      */
     public function setStartUrl($startUrl)
     {
@@ -238,32 +409,46 @@ class AppConfiguration
     }
 
     /**
-     * Adds an application icon.
+     * Returns the theme color.
      *
-     * @param Image $icon The additional application icon.
-     * @return $this
+     * @return  string|null
      */
-    public function addIcon(Image $icon)
+    public function getThemeColor()
     {
-        $this->icons[] = $icon;
+        return $this->themeColor;
+    }
+
+    /**
+     * Sets the theme color. Will be used by Android's task switcher, for example.
+     *
+     * @param   string              $color
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#theme_color-member
+     */
+    public function setThemeColor($color)
+    {
+        $this->themeColor = $color;
         return $this;
     }
 
     /**
-     * Returns an array of all application icons.
+     * Returns an array of all application splash screens.
      *
-     * @return Image[]
+     * @return  Image[]
      */
-    public function getIcons()
+    public function getSplashScreens()
     {
-        return $this->icons;
+        return $this->splashScreens;
     }
 
     /**
      * Adds an application splash screen.
      *
-     * @param Image $splashScreen The additional application splash screen.
-     * @return $this
+     * @param   Image               $splashScreen
+     *
+     * @return  AppConfiguration
      */
     public function addSplashScreen(Image $splashScreen)
     {
@@ -272,72 +457,15 @@ class AppConfiguration
     }
 
     /**
-     * Returns an array of all application splash screens.
+     * Creates an instance of the {@link AppConfiguration} class based on the values in the provided manifest file. Use
+     * the {@link fromManifest} method to use a JSON string as source.
      *
-     * @return Image[]
-     */
-    public function getSplashScreens()
-    {
-        return $this->splashScreens;
-    }
-
-    /**
-     * Sets the manifest URL.
+     * @param   string              $path               Path to a file containing an application manifest compatible
+     *                                                  with the Web App Manifest specification.
      *
-     * @param string $url URL to the manifest file.
-     * @return $this
-     */
-    public function setManifestUrl($url)
-    {
-        $url = trim($url);
-
-        $this->manifestUrl = $url;
-        return $this;
-    }
-
-    /**
-     * Returns the manifest URL or null if no value is set.
+     * @return  AppConfiguration
      *
-     * @return string|null
-     */
-    public function getManifestUrl()
-    {
-        return $this->manifestUrl;
-    }
-
-    /**
-     * Sets the theme color. Must be a hex color code without alpha value or null.
-     *
-     * @param string $color The color code.
-     * @return $this
-     */
-    public function setThemeColor($color)
-    {
-        if ($color !== null && !preg_match("/^#[A-Fa-f0-9]{3,6}$/", trim($color))) {
-            throw new \InvalidArgumentException("Theme color must be a hex color code.");
-        }
-
-        $this->themeColor = $color;
-        return $this;
-    }
-
-    /**
-     * Returns the theme color or null if no value is set.
-     *
-     * @return string|null
-     */
-    public function getThemeColor()
-    {
-        return $this->themeColor;
-    }
-
-    /**
-     * Creates as instance fothe AppConfiguration class based on the values in the provided manifest file. Use method
-     * fromManifest() to use JSON string as source.
-     *
-     * @param string $path Path to a file containing a application manifest compatible with the W3C document "Manifest
-     *     for a web application".
-     * @return AppConfiguration
+     * @see https://www.w3.org/TR/appmanifest/
      */
     public static function fromManifestFile($path)
     {
@@ -345,31 +473,49 @@ class AppConfiguration
     }
 
     /**
-     * Creates an instance of the AppConfiguration class based on the values in the provided JSON string. Use method
-     * fromManifestFile() to use a file as source.
+     * Creates an instance of the {@link AppConfiguration} class based on the values in the provided JSON string. Use
+     * the {@link fromManifestFile} method to use a file as source.
      *
-     * @param string $json A JSON string that is compatible with the W3C document "Manifest for a web application".
-     * @return AppConfiguration
+     * @param   string              $json               A JSON string that is compatible with the Web App Manifest
+     *                                                  specification.
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/
      */
     public static function fromManifest($json)
     {
-        $data = json_decode($json, true);
         $app = new AppConfiguration();
+        $data = json_decode($json, true);
 
-        if (isset($data["name"])) {
-            $app->setName($data["name"]);
+        if (isset($data["background_color"])) {
+            $app->setBackgroundColor($data["background_color"]);
         }
 
-        if (isset($data["short_name"])) {
-            $app->setShortName($data["short_name"]);
+        if (isset($data["description"])) {
+            $app->setDescription($data["description"]);
+        }
+
+        if (isset($data["dir"])) {
+            $app->setDirection($data["dir"]);
+        }
+
+        if (isset($data["display"])) {
+            $app->setDisplay($data["display"]);
+        }
+
+        if (isset($data["icons"])) {
+            foreach ($data["icons"] as $icon) {
+                $app->addIcon(self::imageFromData($icon));
+            }
         }
 
         if (isset($data["lang"])) {
             $app->setLanguage($data["lang"]);
         }
 
-        if (isset($data["display"])) {
-            $app->setDisplay($data["display"]);
+        if (isset($data["name"])) {
+            $app->setName($data["name"]);
         }
 
         if (isset($data["orientation"])) {
@@ -380,14 +526,16 @@ class AppConfiguration
             $app->setScope($data["scope"]);
         }
 
+        if (isset($data["short_name"])) {
+            $app->setShortName($data["short_name"]);
+        }
+
         if (isset($data["start_url"])) {
             $app->setStartUrl($data["start_url"]);
         }
 
-        if (isset($data["icons"])) {
-            foreach ($data["icons"] as $icon) {
-                $app->addIcon(self::imageFromData($icon));
-            }
+        if (isset($data["theme_color"])) {
+            $app->setThemeColor($data["theme_color"]);
         }
 
         if (isset($data["splash_screens"])) {
