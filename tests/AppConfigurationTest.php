@@ -29,7 +29,6 @@ final class AppConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("icon/hd_hi", $app->getIcons()[2]->getSrc());
         $this->assertCount(1, $app->getIcons()[2]->getSizes());
         $this->assertEquals([128, 128], $app->getIcons()[2]->getSizes()[0]);
-        $this->assertEquals(2, $app->getIcons()[2]->getDensity());
 
         $this->assertCount(3, $app->getSplashScreens());
     }

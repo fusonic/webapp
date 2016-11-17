@@ -91,14 +91,6 @@ class ManifestGenerator
             $data["type"] = $type;
         }
 
-        if (($density = $image->getDensity()) !== null) {
-            $data["density"] = $density;
-        }
-
-        if (($backgroundColor = $image->getBackgroundColor()) !== null) {
-            $data["background_color"] = $backgroundColor;
-        }
-
         $sizes = [];
         foreach ($image->getSizes() as $size) {
             $sizes[] = $size[0] . "x" . $size[1];

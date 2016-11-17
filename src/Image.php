@@ -19,62 +19,12 @@ namespace Fusonic\WebApp;
  */
 class Image
 {
-    private $backgroundColor;
-    private $density;
     private $sizes = [];
     private $src;
     private $type;
 
     public function __construct()
     { }
-
-    /**
-     * Returns the background color or null if no value is set.
-     *
-     * @return string|null
-     */
-    public function getBackgroundColor()
-    {
-        return $this->backgroundColor;
-    }
-
-    /**
-     * Sets the background color to use for the image. Must be a CSS3 valid color or null.
-     *
-     * @param string|null $backgroundColor The background color to use.
-     */
-    public function setBackgroundColor($backgroundColor)
-    {
-        $this->backgroundColor = $backgroundColor;
-    }
-
-    /**
-     * Returns the pixel density or null if no value is set.
-     *
-     * @return float|null
-     */
-    public function getDensity()
-    {
-        return $this->density;
-    }
-
-    /**
-     * Sets the density of this image file. May be null.
-     *
-     * @param float $density The density of this image file.
-     */
-    public function setDensity($density)
-    {
-        if ($density !== null) {
-            if (!filter_var($density, FILTER_SANITIZE_NUMBER_FLOAT)) {
-                throw new \InvalidArgumentException("Density must be a float.");
-            } else if ($density <= 0) {
-                throw new \InvalidArgumentException("Density must be greater than 0.");
-            }
-        }
-
-        $this->density = (float)$density;
-    }
 
     /**
      * Returns the src of the file or null if no value is set.
