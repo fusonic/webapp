@@ -405,14 +405,6 @@ class AppConfiguration
             $image->setSrc($data["src"]);
         }
 
-        if (isset($data["density"])) {
-            $image->setDensity($data["density"]);
-        }
-
-        if (isset($data["background_color"])) {
-            $image->setBackgroundColor($data["background_color"]);
-        }
-
         if (isset($data["type"])) {
             $image->setType($data["type"]);
         }
