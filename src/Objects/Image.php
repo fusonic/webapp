@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Fusonic\WebApp;
+namespace Fusonic\WebApp\Objects;
 
 /**
  * Defines an image according to the W3C specification "Manifest for a web application".

@@ -11,6 +11,8 @@
 
 namespace Fusonic\WebApp;
 
+use Fusonic\WebApp\Objects\Image;
+
 /**
  * Contains all data of a web application to create different assets and/or tags.
  *
