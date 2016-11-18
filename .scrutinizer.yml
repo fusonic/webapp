@@ -1,0 +1,17 @@
+build:
+  environment:
+    php:
+      version: 5.5
+  tests:
+    override:
+      -
+        command: 'vendor/phpunit/phpunit/phpunit --configuration phpunit.xml --coverage-clover coverage-report'
+        coverage:
+          file: 'coverage-report'
+          format: 'clover'
+
+tools:
+  php_code_sniffer:
+    enabled: true
+    config:
+      standard: PSR2
