@@ -15,25 +15,48 @@ use Fusonic\WebApp\AppConfiguration;
 use Fusonic\WebApp\Objects\Image;
 
 /**
- * Generates an app manifest according to the W3C specification "Manifest for a web application"
- * See http://www.w3.org/TR/appmanifest/
+ * Generates an app manifest according to the W3C specification "Web App Manifest".
  *
  * @package Fusonic\WebApp
+ *
+ * @see https://www.w3.org/TR/appmanifest/
  */
-class ManifestGenerator
+final class ManifestGenerator
 {
-    public function __construct()
-    { }
-
     /**
-     * Returns the manifest data as array.
+     * Returns the manifest data as an array.
      *
-     * @param AppConfiguration $configuration The configuration to create the manifest from.
-     * @return array
+     * @param   AppConfiguration    $configuration      The configuration to create the manifest from.
+     *
+     * @return  array
      */
     public function get(AppConfiguration $configuration)
     {
-        $manifest = [];
+        $manifest = [ ];
+
+        if (($backgroundColor = $configuration->getBackgroundColor()) !== null) {
+            $manifest["background_color"] = $backgroundColor;
+        }
+
+        if (($description = $configuration->getDescription()) !== null) {
+            $manifest["description"] = $description;
+        }
+
+        if (($direction = $configuration->getDirection()) !== null) {
+            $manifest["dir"] = $direction;
+        }
+
+        if (($display = $configuration->getDisplay()) !== null) {
+            $manifest["display"] = $display;
+        }
+
+        if (count($icons = $configuration->getIcons()) > 0) {
+            $manifest["icons"] = [ ];
+
+            foreach ($icons as $icon) {
+                $manifest["icons"][] = $this->getImageData($icon);
+            }
+        }
 
         if (($language = $configuration->getLanguage()) !== null) {
             $manifest["lang"] = $language;
@@ -43,38 +66,28 @@ class ManifestGenerator
             $manifest["name"] = $name;
         }
 
-        if (($shortName = $configuration->getShortName()) !== null) {
-            $manifest["short_name"] = $shortName;
+        if (($orientation = $configuration->getOrientation()) !== null) {
+            $manifest["orientation"] = $orientation;
         }
 
         if (($scope = $configuration->getScope()) !== null) {
             $manifest["scope"] = $scope;
         }
 
+        if (($shortName = $configuration->getShortName()) !== null) {
+            $manifest["short_name"] = $shortName;
+        }
+
         if (($startUrl = $configuration->getStartUrl()) !== null) {
             $manifest["start_url"] = $startUrl;
         }
 
-        if (($display = $configuration->getDisplay()) !== null) {
-            $manifest["display"] = $display;
+        if (($themeColor = $configuration->getThemeColor()) !== null) {
+            $manifest["theme_color"] = $themeColor;
         }
 
-        if (($orientation = $configuration->getOrientation()) !== null) {
-            $manifest["orientation"] = $orientation;
-        }
-
-        $icons = $configuration->getIcons();
-        if (count($icons) > 0) {
-            $manifest["icons"] = [];
-
-            foreach ($icons as $icon) {
-                $manifest["icons"][] = $this->getImageData($icon);
-            }
-        }
-
-        $splashScreens = $configuration->getIcons();
-        if (count($splashScreens) > 0) {
-            $manifest["splash_screens"] = [];
+        if (count($splashScreens = $configuration->getSplashScreens()) > 0) {
+            $manifest["splash_screens"] = [ ];
 
             foreach ($splashScreens as $splashScreen) {
                 $manifest["splash_screens"][] = $this->getImageData($splashScreen);
@@ -90,16 +103,24 @@ class ManifestGenerator
             "src" => $image->getSrc(),
         ];
 
+        if (count($purpose = $image->getPurpose()) > 0) {
+            $data["purpose"] = implode(" ", $purpose);
+        }
+
         if (($type = $image->getType()) !== null) {
             $data["type"] = $type;
         }
 
-        $sizes = [];
-        foreach ($image->getSizes() as $size) {
-            $sizes[] = $size[0] . "x" . $size[1];
-        }
-        if (count($sizes) > 0) {
-            $data["sizes"] = implode(" ", $sizes);
+        if (count($sizes = $image->getSizes()) > 0) {
+            $data["sizes"] = implode(
+                " ",
+                array_map(
+                    function (array $size) {
+                        return "{$size[0]}x{$size[1]}";
+                    },
+                    $sizes
+                )
+            );
         }
 
         return $data;
