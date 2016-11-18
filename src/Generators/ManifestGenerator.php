@@ -86,14 +86,6 @@ final class ManifestGenerator
             $manifest["theme_color"] = $themeColor;
         }
 
-        if (count($splashScreens = $configuration->getSplashScreens()) > 0) {
-            $manifest["splash_screens"] = [ ];
-
-            foreach ($splashScreens as $splashScreen) {
-                $manifest["splash_screens"][] = $this->getImageData($splashScreen);
-            }
-        }
-
         return $manifest;
     }
 

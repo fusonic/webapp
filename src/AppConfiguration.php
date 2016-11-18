@@ -12,6 +12,7 @@
 namespace Fusonic\WebApp;
 
 use Fusonic\WebApp\Generators\ManifestGenerator;
+use Fusonic\WebApp\Generators\TagGenerator;
 use Fusonic\WebApp\Objects\Image;
 
 /**
@@ -20,6 +21,7 @@ use Fusonic\WebApp\Objects\Image;
  * @package Fusonic\WebApp
  *
  * @see ManifestGenerator
+ * @see TagGenerator
  */
 final class AppConfiguration
 {
@@ -55,8 +57,6 @@ final class AppConfiguration
     private $themeColor;
 
     private $manifestUrl;
-
-    private $splashScreens = [ ];
 
     /**
      * Returns the manifest URL.
@@ -437,29 +437,6 @@ final class AppConfiguration
     }
 
     /**
-     * Returns an array of all application splash screens.
-     *
-     * @return  Image[]
-     */
-    public function getSplashScreens()
-    {
-        return $this->splashScreens;
-    }
-
-    /**
-     * Adds an application splash screen.
-     *
-     * @param   Image               $splashScreen
-     *
-     * @return  AppConfiguration
-     */
-    public function addSplashScreen(Image $splashScreen)
-    {
-        $this->splashScreens[] = $splashScreen;
-        return $this;
-    }
-
-    /**
      * Creates an instance of the {@link AppConfiguration} class based on the values in the provided manifest file. Use
      * the {@link fromManifest} method to use a JSON string as source.
      *
@@ -539,12 +516,6 @@ final class AppConfiguration
 
         if (isset($data["theme_color"])) {
             $app->setThemeColor($data["theme_color"]);
-        }
-
-        if (isset($data["splash_screens"])) {
-            foreach ($data["splash_screens"] as $splashScreen) {
-                $app->addSplashScreen(self::imageFromData($splashScreen));
-            }
         }
 
         return $app;

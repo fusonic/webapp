@@ -11,24 +11,70 @@
 
 namespace Fusonic\WebApp\Generators;
 
-use Fusonic\Linq\Linq;
 use Fusonic\WebApp\AppConfiguration;
-use Fusonic\WebApp\Objects\Image;
 
 /**
- * Generates various meta/link tags.
+ * Generates meta/link tags.
  *
  * @package Fusonic\WebApp
+ *
+ * @see https://www.w3.org/TR/appmanifest/#using-a-link-element-to-link-to-a-manifest
+ * @see https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
  */
-class TagGenerator
+final class TagGenerator
 {
-    private $generateTitleTag = false;
+    private $generateStandardTags = true;
+    private $generateLegacyStandardTags = true;
     private $generateAppleSpecificTags = true;
     private $generateMicrosoftSpecificTags = true;
-    private $generateStandardTags = true;
 
     /**
-     * Returns the data of all generated meta tags. Array in the form of
+     * Returns a string containing all meta/link tags.
+     *
+     * @param   AppConfiguration    $configuration      The configuration to create tags from.
+     *
+     * @return  string
+     */
+    public function getTags(AppConfiguration $configuration)
+    {
+        return implode(
+            "\n",
+            array_map(
+                function (array $tag) {
+                    return $this->renderTag($tag);
+                },
+                $this->getData($configuration)
+            )
+        );
+    }
+
+    private function renderTag(array $data)
+    {
+        $renderedHtml = "<{$data[0]}";
+
+        foreach ($data as $key => $value) {
+            if ($key === 0 || $key === 1) {
+                continue;
+            }
+
+            if ($value === null) {
+                continue;
+            }
+
+            $renderedHtml .= " {$key}=\"" . htmlspecialchars($value) . "\"";
+        }
+
+        if (isset($data[1])) {
+            return $renderedHtml . htmlspecialchars($data[1]) . "</{$data[0]}>";
+        } else {
+            return $renderedHtml . ">";
+        }
+    }
+
+    /**
+     * Returns the data of all generated meta tags in an array in the form of
+     *
+     * <code>
      * [
      *     [
      *         "tag-name",
@@ -37,140 +83,159 @@ class TagGenerator
      *         "attribute-2-name" => "attribute-2-value"
      *     ]
      * ]
+     * </code>
      *
-     * @param AppConfiguration $configuration The configuration to create tags from.
-     * @return array
+     * or
+     *
+     * <code>
+     * [
+     *     [
+     *         "tag-name",
+     *         "attribute-1-name" => "attribute-1-value",
+     *         "attribute-2-name" => "attribute-2-value"
+     *     ]
+     * ]
+     * </code>
+     *
+     * @param   AppConfiguration    $configuration
+     *
+     * @return  array
      */
-    public function getData(AppConfiguration $configuration)
+    private function getData(AppConfiguration $configuration)
     {
         return array_merge(
-            $this->generateStandardTags ? $this->getStandardTags($configuration) : [],
-            $this->generateAppleSpecificTags ? $this->getAppleTags($configuration) : [],
-            $this->generateMicrosoftSpecificTags ? $this->getMicrosoftTags($configuration) : []
+            $this->generateStandardTags ? $this->getStandardTags($configuration) : [ ],
+            $this->generateLegacyStandardTags ? $this->getLegacyStandardTags($configuration) : [ ],
+            $this->generateAppleSpecificTags ? $this->getAppleTags($configuration) : [ ],
+            $this->generateMicrosoftSpecificTags ? $this->getMicrosoftTags($configuration) : [ ]
         );
     }
 
-    /**
-     * Returns a string containing all meta/link tags.
-     *
-     * @param AppConfiguration $configuration The configuration to create tags from.
-     * @return string
-     */
-    public function getTags(AppConfiguration $configuration)
+    private function getStandardTags(AppConfiguration $configuration)
     {
-        $data = $this->getData($configuration);
+        $tags = [ ];
 
-        $tags = '';
-        foreach ($data as $tag) {
-            $renderedTag = '<' . $tag[0];
-            foreach ($tag as $key => $value) {
-                if ($key === 0 || $key === 1) {
-                    continue;
-                }
-                $renderedTag .= ' ' . $key . '="' . addslashes($value) . '"';
-            }
-            $renderedTag .= '>';
+        // Manifest
+        // https://www.w3.org/TR/appmanifest/#using-a-link-element-to-link-to-a-manifest
+        $tags[] = [
+            "link",
+            "rel" => "manifest",
+            "href" => $configuration->getManifestUrl(),
+        ];
 
-            if (isset($tag[1])) {
-                $renderedTag .= htmlspecialchars($tag[1]) . '</' . $tag[0] . '>';
-            }
-
-            $tags .= $renderedTag . "\n";
-        }
         return $tags;
     }
 
-    /**
-     * https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-     *
-     * @param AppConfiguration $configuration
-     * @return array
-     */
-    private function getAppleTags(AppConfiguration $configuration)
+    private function getLegacyStandardTags(AppConfiguration $configuration)
     {
-        $tags = [
-            // <meta name="apple-mobile-web-app-capable" content="yes">
-            // https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
-            [
-                "meta",
-                "name" => "apple-mobile-web-app-capable",
-                "content" => "yes",
-            ],
-            // <meta name="format-detection" content="telephone=no">
-            // https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
-            [
-                "meta",
-                "name" => "format-detection",
-                "content" => "telephone=no",
-            ]
-        ];
+        $tags = [ ];
 
         // Application name
-        if (($name = $configuration->getName()) !== null) {
+        // https://html.spec.whatwg.org/multipage/semantics.html#meta-application-name
+        if (($shortName = $configuration->getShortName()) !== null) {
             $tags[] = [
                 "meta",
-                "name" => "apple-mobile-web-app-title",
-                "content" => $name,
-            ];
-        }
-
-        // Icons
-        // <link rel="apple-touch-icon" sizes="..." href="...">
-        foreach ($configuration->getIcons() as $icon) {
-            $sizes = [];
-            foreach ($icon->getSizes() as $size) {
-                $sizes[] = $size[0] . "x" . $size[1];
-            }
-
-            $tags[] = [
-                "link",
-                "rel" => "apple-touch-icon",
-                "sizes" => implode(" ", $sizes),
-                "href" => $icon->getSrc(),
+                "name" => "application-name",
+                "content" => $shortName,
             ];
         }
 
         // Theme color
-        // https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
+        // https://html.spec.whatwg.org/multipage/semantics.html#meta-theme-color
         if (($themeColor = $configuration->getThemeColor()) !== null) {
             $tags[] = [
                 "meta",
-                "name" => "apple-mobile-web-app-status-bar-style",
+                "name" => "theme-color",
                 "content" => $themeColor,
             ];
         }
 
-        // Startup image must be 320x480 and in portrait mode
-        $splashScreen = Linq::from($configuration->getSplashScreens())
-            ->firstOrNull(
-                function (Image $img) {
-                    return Linq::from($img->getSizes())
-                        ->any(
-                            function ($size) {
-                                return $size == "320x480";
-                            }
-                        );
-                }
+        // Icons
+        // https://html.spec.whatwg.org/multipage/semantics.html#rel-icon
+        foreach ($configuration->getIcons() as $icon) {
+            $sizes = array_map(
+                function (array $size) {
+                    return "{$size[0]}x{$size[1]}";
+                },
+                $icon->getSizes()
             );
-        if ($splashScreen !== null) {
+
             $tags[] = [
                 "link",
-                "rel" => "apple-touch-startup-image",
-                "href" => $splashScreen->getSrc(),
+                "rel" => "icon",
+                "href" => $icon->getSrc(),
+                "sizes" => count($sizes) > 0 ? implode(" ", $sizes) : null,
             ];
         }
 
         return $tags;
     }
 
-    /**
-     * https://developers.google.com/web/fundamentals/device-access/stickyness/additional-customizations?hl=en
-     *
-     * @param AppConfiguration $configuration
-     * @return array
-     */
+    private function getAppleTags(AppConfiguration $configuration)
+    {
+        $tags = [ ];
+
+        // format-detection
+        // https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html#//apple_ref/doc/uid/TP40008193-SW5
+        $tags[] = [
+            "meta",
+            "name" => "format-detection",
+            "content" => "telephone=no",
+        ];
+
+        // Application name
+        if (($shortName = $configuration->getShortName()) !== null) {
+            $tags[] = [
+                "meta",
+                "name" => "apple-mobile-web-app-title",
+                "content" => $shortName,
+            ];
+        }
+
+        // Icons
+        // https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html#//apple_ref/doc/uid/TP40002051-CH3-SW4
+        foreach ($configuration->getIcons() as $icon) {
+            $sizes = array_map(
+                function (array $size) {
+                    return "{$size[0]}x{$size[1]}";
+                },
+                $icon->getSizes()
+            );
+
+            $tags[] = [
+                "link",
+                "rel" => "apple-touch-icon",
+                "href" => $icon->getSrc(),
+                "sizes" => count($sizes) > 0 ? implode(" ", $sizes) : null,
+            ];
+        }
+
+        // apple-mobile-web-app-capable
+        // apple-mobile-web-app-status-bar-style
+        // https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
+        if ($configuration->getDisplay() == AppConfiguration::DISPLAY_FULLSCREEN ||
+            $configuration->getDisplay() == AppConfiguration::DISPLAY_STANDALONE
+        ) {
+            $tags[] = [
+                "meta",
+                "name" => "apple-mobile-web-app-capable",
+                "content" => "yes",
+            ];
+
+            $tags[] = [
+                "meta",
+                "name" => "apple-mobile-web-app-status-bar-style",
+                "content" => $configuration->getDisplay() == AppConfiguration::DISPLAY_FULLSCREEN ? "black-translucent" : "default",
+            ];
+        }
+
+        return $tags;
+    }
+
     private function getMicrosoftTags(AppConfiguration $configuration)
     {
+        $tags = [ ];
+
         // Start URL
         // https://msdn.microsoft.com/en-us/library/gg491732(v=vs.85).aspx#msapplication-starturl
         if (($startUrl = $configuration->getStartUrl()) !== null) {
@@ -188,70 +253,6 @@ class TagGenerator
                 "meta",
                 "name" => "msapplication-navbutton-color",
                 "content" => $themeColor,
-            ];
-        }
-
-        return [];
-    }
-
-    private function getStandardTags(AppConfiguration $configuration)
-    {
-        $tags = [];
-
-        // Title
-        // http://www.w3.org/TR/html5/document-metadata.html#the-title-element
-        if ($this->generateTitleTag) {
-            if (($title = $configuration->getName()) !== null) {
-                $tags[] = [
-                    "title",
-                    $title,
-                ];
-            }
-        }
-
-        // Application name
-        // http://www.w3.org/TR/html5/document-metadata.html#meta-application-name
-        if (($name = $configuration->getName()) !== null) {
-            $tags[] = [
-                "meta",
-                "name" => "application-name",
-                "content" => $name,
-            ];
-        }
-
-        // Theme color
-        // https://github.com/whatwg/meta-theme-color
-        if (($themeColor = $configuration->getThemeColor()) !== null) {
-            $tags[] = [
-                "meta",
-                "name" => "theme-color",
-                "content" => $themeColor,
-            ];
-        }
-
-        // Manifest
-        // http://www.w3.org/TR/appmanifest/#using-a-link-element-to-link-to-a-manifest
-        if (($manifestUrl = $configuration->getManifestUrl()) !== null) {
-            $tags[] = [
-                "link",
-                "rel" => "manifest",
-                "href" => $manifestUrl,
-            ];
-        }
-
-        // Icons
-        // http://www.w3.org/TR/html5/links.html#rel-icon
-        foreach ($configuration->getIcons() as $icon) {
-            $sizes = [];
-            foreach ($icon->getSizes() as $size) {
-                $sizes[] = $size[0] . "x" . $size[1];
-            }
-
-            $tags[] = [
-                "link",
-                "rel" => "icon",
-                "sizes" => implode(" ", $sizes),
-                "href" => $icon->getSrc(),
             ];
         }
 
