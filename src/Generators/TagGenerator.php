@@ -23,27 +23,32 @@ use Fusonic\WebApp\AppConfiguration;
  */
 final class TagGenerator
 {
-    private $generateStandardTags = true;
-    private $generateLegacyStandardTags = true;
-    private $generateAppleSpecificTags = true;
-    private $generateMicrosoftSpecificTags = true;
-
     /**
      * Returns a string containing all meta/link tags.
      *
      * @param   AppConfiguration    $configuration      The configuration to create tags from.
      *
+     * @param   bool                $standardTags       Generate standards-compliant tags?
+     * @param   bool                $legacyTags         Generate tags for legacy browsers?
+     * @param   bool                $appleTags          Generate proprietary tags for iOS devices?
+     * @param   bool                $microsoftTags      Generate proprietary tags for Windows devices?
+     *
      * @return  string
      */
-    public function getTags(AppConfiguration $configuration)
-    {
+    public function getTags(
+        AppConfiguration $configuration,
+        $standardTags = true,
+        $legacyTags = true,
+        $appleTags = true,
+        $microsoftTags = true
+    ) {
         return implode(
             "\n",
             array_map(
                 function (array $tag) {
                     return $this->renderTag($tag);
                 },
-                $this->getData($configuration)
+                $this->getData($configuration, $standardTags, $legacyTags, $appleTags, $microsoftTags)
             )
         );
     }
@@ -98,16 +103,20 @@ final class TagGenerator
      * </code>
      *
      * @param   AppConfiguration    $configuration
+     * @param   bool                $standardTags
+     * @param   bool                $legacyTags
+     * @param   bool                $appleTags
+     * @param   bool                $microsoftTags
      *
      * @return  array
      */
-    private function getData(AppConfiguration $configuration)
+    private function getData(AppConfiguration $configuration, $standardTags, $legacyTags, $appleTags, $microsoftTags)
     {
         return array_merge(
-            $this->generateStandardTags ? $this->getStandardTags($configuration) : [ ],
-            $this->generateLegacyStandardTags ? $this->getLegacyStandardTags($configuration) : [ ],
-            $this->generateAppleSpecificTags ? $this->getAppleTags($configuration) : [ ],
-            $this->generateMicrosoftSpecificTags ? $this->getMicrosoftTags($configuration) : [ ]
+            $standardTags ? $this->getStandardTags($configuration) : [ ],
+            $legacyTags ? $this->getLegacyTags($configuration) : [ ],
+            $appleTags ? $this->getAppleTags($configuration) : [ ],
+            $microsoftTags ? $this->getMicrosoftTags($configuration) : [ ]
         );
     }
 
@@ -126,7 +135,7 @@ final class TagGenerator
         return $tags;
     }
 
-    private function getLegacyStandardTags(AppConfiguration $configuration)
+    private function getLegacyTags(AppConfiguration $configuration)
     {
         $tags = [ ];
 
