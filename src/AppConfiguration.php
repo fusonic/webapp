@@ -11,12 +11,15 @@
 
 namespace Fusonic\WebApp;
 
+use Fusonic\WebApp\Generators\ManifestGenerator;
 use Fusonic\WebApp\Objects\Image;
 
 /**
  * Contains all data of a web application to create different assets and/or tags.
  *
  * @package Fusonic\WebApp
+ *
+ * @see ManifestGenerator
  */
 final class AppConfiguration
 {
