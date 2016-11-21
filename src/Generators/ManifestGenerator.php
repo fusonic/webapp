@@ -95,6 +95,10 @@ final class ManifestGenerator
             "src" => $image->getSrc(),
         ];
 
+        if (($platform = $image->getPlatform()) !== null) {
+            $data["platform"] = $platform;
+        }
+
         if (count($purpose = $image->getPurpose()) > 0) {
             $data["purpose"] = implode(" ", $purpose);
         }

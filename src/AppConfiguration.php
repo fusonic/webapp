@@ -43,6 +43,10 @@ final class AppConfiguration
     const ORIENTATION_PORTRAIT_PRIMARY = "portrait-primary";
     const ORIENTATION_PORTRAIT_SECONDARY = "portrait-secondary";
 
+    const PLATFORM_ANDROID = "android";
+    const PLATFORM_IOS = "ios";
+    const PLATFORM_WEB = "web";
+
     private $backgroundColor;
     private $description;
     private $direction;
