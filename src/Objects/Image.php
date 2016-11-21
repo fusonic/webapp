@@ -11,6 +11,8 @@
 
 namespace Fusonic\WebApp\Objects;
 
+use Fusonic\WebApp\Members\PlatformTrait;
+
 /**
  * Represents an <b>image object</b>.
  *
@@ -20,6 +22,8 @@ namespace Fusonic\WebApp\Objects;
  */
 final class Image
 {
+    use PlatformTrait;
+
     const PURPOSE_BADGE = "badge";
     const PURPOSE_ANY = "any";
 

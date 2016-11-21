@@ -12,6 +12,7 @@
 namespace Fusonic\WebApp\Generators;
 
 use Fusonic\WebApp\AppConfiguration;
+use Fusonic\WebApp\Objects\Image;
 
 /**
  * Generates meta/link tags.
@@ -162,19 +163,21 @@ final class TagGenerator
         // Icons
         // https://html.spec.whatwg.org/multipage/semantics.html#rel-icon
         foreach ($configuration->getIcons() as $icon) {
-            $sizes = array_map(
-                function (array $size) {
-                    return "{$size[0]}x{$size[1]}";
-                },
-                $icon->getSizes()
-            );
+            if (in_array($icon->getPlatform(), [ null, Image::PLATFORM_WEB ])) {
+                $sizes = array_map(
+                    function (array $size) {
+                        return "{$size[0]}x{$size[1]}";
+                    },
+                    $icon->getSizes()
+                );
 
-            $tags[] = [
-                "link",
-                "rel" => "icon",
-                "href" => $icon->getSrc(),
-                "sizes" => count($sizes) > 0 ? implode(" ", $sizes) : null,
-            ];
+                $tags[] = [
+                    "link",
+                    "rel" => "icon",
+                    "href" => $icon->getSrc(),
+                    "sizes" => count($sizes) > 0 ? implode(" ", $sizes) : null,
+                ];
+            }
         }
 
         return $tags;
@@ -204,19 +207,21 @@ final class TagGenerator
         // Icons
         // https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html#//apple_ref/doc/uid/TP40002051-CH3-SW4
         foreach ($configuration->getIcons() as $icon) {
-            $sizes = array_map(
-                function (array $size) {
-                    return "{$size[0]}x{$size[1]}";
-                },
-                $icon->getSizes()
-            );
+            if (in_array($icon->getPlatform(), [ null, Image::PLATFORM_IOS ])) {
+                $sizes = array_map(
+                    function (array $size) {
+                        return "{$size[0]}x{$size[1]}";
+                    },
+                    $icon->getSizes()
+                );
 
-            $tags[] = [
-                "link",
-                "rel" => "apple-touch-icon",
-                "href" => $icon->getSrc(),
-                "sizes" => count($sizes) > 0 ? implode(" ", $sizes) : null,
-            ];
+                $tags[] = [
+                    "link",
+                    "rel" => "apple-touch-icon",
+                    "href" => $icon->getSrc(),
+                    "sizes" => count($sizes) > 0 ? implode(" ", $sizes) : null,
+                ];
+            }
         }
 
         // apple-mobile-web-app-capable
