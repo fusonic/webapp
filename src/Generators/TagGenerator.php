@@ -163,7 +163,7 @@ final class TagGenerator
         // Icons
         // https://html.spec.whatwg.org/multipage/semantics.html#rel-icon
         foreach ($configuration->getIcons() as $icon) {
-            if (in_array($icon->getPlatform(), [ null, Image::PLATFORM_WEB ])) {
+            if (in_array($icon->getPlatform(), [ null, AppConfiguration::PLATFORM_WEB ])) {
                 $sizes = array_map(
                     function (array $size) {
                         return "{$size[0]}x{$size[1]}";
@@ -207,7 +207,7 @@ final class TagGenerator
         // Icons
         // https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html#//apple_ref/doc/uid/TP40002051-CH3-SW4
         foreach ($configuration->getIcons() as $icon) {
-            if (in_array($icon->getPlatform(), [ null, Image::PLATFORM_IOS ])) {
+            if (in_array($icon->getPlatform(), [ null, AppConfiguration::PLATFORM_IOS ])) {
                 $sizes = array_map(
                     function (array $size) {
                         return "{$size[0]}x{$size[1]}";
