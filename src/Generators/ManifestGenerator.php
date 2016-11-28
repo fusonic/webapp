@@ -74,6 +74,14 @@ final class ManifestGenerator
             $manifest["scope"] = $scope;
         }
 
+        if (count($screenshots = $configuration->getScreenshots()) > 0) {
+            $manifest["screenshots"] = [ ];
+
+            foreach ($screenshots as $screenshot) {
+                $manifest["screenshots"][] = $this->getImageData($screenshot);
+            }
+        }
+
         if (($shortName = $configuration->getShortName()) !== null) {
             $manifest["short_name"] = $shortName;
         }

@@ -56,6 +56,7 @@ final class AppConfiguration
     private $name;
     private $orientation;
     private $scope;
+    private $screenshots = [ ];
     private $shortName;
     private $startUrl;
     private $themeColor;
@@ -366,6 +367,31 @@ final class AppConfiguration
     }
 
     /**
+     * Returns an array of all application screenshots.
+     *
+     * @return  Image[]
+     */
+    public function getScreenshots()
+    {
+        return $this->screenshots;
+    }
+
+    /**
+     * Adds an application screenshot.
+     *
+     * @param   Image               $screenshot
+     *
+     * @return  AppConfiguration
+     *
+     * @see https://www.w3.org/TR/appmanifest/#screenshots-member
+     */
+    public function addScreenshot(Image $screenshot)
+    {
+        $this->screenshots[] = $screenshot;
+        return $this;
+    }
+
+    /**
      * Returns the application's short name.
      *
      * @return  string|null
@@ -508,6 +534,12 @@ final class AppConfiguration
 
         if (isset($data["scope"])) {
             $app->setScope($data["scope"]);
+        }
+
+        if (isset($data["screenshots"])) {
+            foreach ($data["screenshots"] as $screenshot) {
+                $app->addScreenshot(self::imageFromData($screenshot));
+            }
         }
 
         if (isset($data["short_name"])) {
