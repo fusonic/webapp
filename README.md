@@ -3,6 +3,7 @@ fusonic/webapp
 
 [![](https://scrutinizer-ci.com/g/fusonic/webapp/badges/build.png?b=master)](https://scrutinizer-ci.com/g/fusonic/webapp/build-status/master)
 [![](https://scrutinizer-ci.com/g/fusonic/webapp/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/fusonic/webapp/?branch=master)
+[![Total Downloads](https://poser.pugx.org/fusonic/webapp/downloads.png)](https://packagist.org/packages/fusonic/webapp)
 
 `fusonic/webapp` is a library that supports you in creating meta information for your web application from a
 “code first” approach. While you define your meta information once, `fusonic/webapp` will create a
